@@ -18,4 +18,7 @@ router.put("/updateClientes", clientes.updateClientes);
 //ruta para eliminar
 //http://localhost:3001/api/clientes/deleteClientes/id del cliente a eliminar
 router.delete("/deleteClientes/:_id", clientes.deleteClientes);
+
+//ruta para login
+router.post("/login", clientes.login);
 export default router;

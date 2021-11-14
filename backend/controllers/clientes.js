@@ -1,5 +1,10 @@
 //importamos la estructura que esta en models
 import clientes from "../models/clientes.js";
+//importamos la libreria para encriptar
+import bcrypt from "bcrypt";
+//importamos el jsonwebtoken
+import jwt from "jsonwebtoken";
+import moment from "moment";
 
 //creamos la funcion
 const registerClientes = async (req, res) => {
@@ -7,14 +12,17 @@ const registerClientes = async (req, res) => {
   if (!req.body.name || !req.body.email || !req.body.password)
     return res.status(400).send("incomplete data");
   //validamos que el cliente existe o no
-  const existingCliente = await clientes.findOne({ name: req.body.name });
+  const existingCliente = await clientes.findOne({ email: req.body.email });
   if (existingCliente) return res.status(400).send("the cliente already exist");
 
+  //aqui encriptamos la clave
+  const hash = await bcrypt.hash(req.body.password, 10);
+//aqui creamos la estructura de como se va a guardar
   const clientesSchema = new clientes({
     //aqui mandamos los datos
     name: req.body.name,
     email: req.body.email,
-    password: req.body.password,
+    password: hash,
     dbStatus: true,
   });
   //aqui guardamos la informacion
@@ -68,7 +76,40 @@ const deleteClientes = async (req, res) => {
     ? res.status(400).send("cliente no found")
     : res.status(200).send("cliente delete");
 };
+//login
+const login = async (req, res) => {
+  if (!req.body.email || !req.body.password)
+    return re.status(400).send({ message: "Incomplete data" });
+  //validemos que exista el email si existe trae ese json y lopone dentro de email
+  const clienteLogin = await clientes.findOne({ email: req.body.email });
+  if (!clienteLogin)
+    return res.status(400).send({ message: "Wrong email or password" });
+
+  //validamos que si trajo el email bien valide la contraseña del json email se le saca el password
+  //valida que el password del json o base de datos sea igual al del body que ingresaron
+  const hash = await bcrypt.compare(req.body.password, clienteLogin.password);
+  if (!hash)
+    return res.status(400).send({ message: "Wrong email or password" });
+  //se compara las contraseñas
+
+  try {
+    //aqui vamos a general el jsonwebtoken
+    return res.status(200).json({
+      token: jwt.sign(
+        {
+          _id: clienteLogin._id,
+          name: clienteLogin.name,
+          roleId: clienteLogin.roleId,
+          iat: moment().unix(),
+        },
+        process.env.SK_JWT
+      ),
+    });
+  } catch (e) {
+    return res.status(400).send({ message: "Login error" });
+  }
+};
 
 //cuando es una funcion lo exportamos con las llaves{}
 //exportar tambien la funcion de get listCliente
-export default { registerClientes, listClientes, updateClientes, deleteClientes };
+export default { registerClientes, listClientes, updateClientes, deleteClientes, login };
