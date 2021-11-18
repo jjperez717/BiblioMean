@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import libros from "./routes/libros.js";
 import clientes from "./routes/clientes.js";
 import proveedores from "./routes/proveedores.js";
+import admin from "./routes/admin.js";
 
 
 //esta linea cuando se ejecute el servidor nos inicializa las variable
@@ -19,12 +20,15 @@ const app = express();
 app.use(express.json());
 //aqui ya estamos usando las reglas de coneccion
 app.use(cors());
-// esta es toda la ruta que seguimos http://localhost:3001/api/libros/registerLibros
+// esta es toda la ruta que seguimos http://localhost:3001/api/libros/
 app.use("/api/libros", libros)
-// esta es toda la ruta que seguimos http://localhost:3001/api/clientes/registerClientes
+// esta es toda la ruta que seguimos http://localhost:3001/api/clientes/
 app.use("/api/clientes", clientes)
-// esta es toda la ruta que seguimos http://localhost:3001/api/proveedores/registerProveedores
+// esta es toda la ruta que seguimos http://localhost:3001/api/proveedores/
 app.use("/api/proveedores", proveedores)
+
+// esta es toda la ruta que seguimos http://localhost:3001/api/admin/
+app.use("/api/admin", admin);
 
 //aqui estamos conectandonos al puerto que declaramos en .env
 app.listen(process.env.PORT, () =>{

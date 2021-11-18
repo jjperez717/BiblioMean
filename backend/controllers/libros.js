@@ -74,6 +74,12 @@ const updateLibros = async (req, res) => {
     : res.status(200).send(librosUpdate);
 };
 
+const findLibros = async (req, res) => {
+  const librosId = await libros.findById({ _id: req.params["_id"] });
+  return !librosId
+    ? res.status(400).send({ message: "No search results" })
+    : res.status(200).send({ librosId });
+};
 //funcion para eliminar libros
 const deleteLibros = async (req, res) => {
   //utilizamos el findByIdAndDelete porque este lo elimina de una y el remove puede dejar espacio en memoria
@@ -86,4 +92,4 @@ const deleteLibros = async (req, res) => {
     : res.status(200).send("book delete");
 };
 //cuando es una funcion lo exportamos con las llaves{}
-export default { registerLibros, listLibros, updateLibros, deleteLibros };
+export default { registerLibros, listLibros, updateLibros, deleteLibros, findLibros};

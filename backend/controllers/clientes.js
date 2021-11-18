@@ -18,19 +18,28 @@ const registerClientes = async (req, res) => {
   //aqui encriptamos la clave
   const hash = await bcrypt.hash(req.body.password, 10);
 //aqui creamos la estructura de como se va a guardar
-  const clientesSchema = new clientes({
+  const Register = new clientes({
     //aqui mandamos los datos
     name: req.body.name,
     email: req.body.email,
     password: hash,
     dbStatus: true,
   });
-  //aqui guardamos la informacion
-  const result = await clientesSchema.save();
-  //si esto no funciona muestra este mensaje
-  if (!result) return res.status(400).sed("Failed to register cliente");
-  // si funciona mostramos el result
-  return res.status(200).send({ result });
+  const result = await Register.save();
+  try {
+    return res.status(200).json({
+      token: jwt.sign(
+        {
+          _id: result._id,
+          name: result.name,
+          iat: moment().unix(),
+        },
+        process.env.SK_JWT
+      ),
+    });
+  } catch (e) {
+    return res.status(400).send({ message: "Register error" });
+  }
 };
 // funcion para  listar  GET
 const listClientes = async (req, res) => {
@@ -85,7 +94,6 @@ const login = async (req, res) => {
   if (!clienteLogin)
     return res.status(400).send({ message: "Wrong email or password" });
 
-  //validamos que si trajo el email bien valide la contraseña del json email se le saca el password
   //valida que el password del json o base de datos sea igual al del body que ingresaron
   const hash = await bcrypt.compare(req.body.password, clienteLogin.password);
   if (!hash)
